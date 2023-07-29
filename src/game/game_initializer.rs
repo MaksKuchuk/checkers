@@ -37,7 +37,7 @@ fn init_board() {
 
     (*BOARD.lock().unwrap()) = b;
 
-    init_arrangement(snd_player, fst_player);
+    init_arrangement(fst_player, snd_player);
 }
 
 fn init_arrangement(fst: Arc<Mutex<Player>>, snd: Arc<Mutex<Player>>) {

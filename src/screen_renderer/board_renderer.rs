@@ -1,16 +1,8 @@
-use super::{draw_rectangle, get_screen_center, BLACK_CELL_CL, CELL_SIZE, WHITE_CELL_CL};
+use super::{draw_rectangle, get_start_position, BLACK_CELL_CL, CELL_SIZE, WHITE_CELL_CL};
 use crate::game::{CELL_HORIZONTAL, CELL_VERTICAL};
 
-fn get_start_position(center: &(f32, f32)) -> (f32, f32) {
-    (
-        center.0 - CELL_SIZE * CELL_HORIZONTAL as f32 / 2.,
-        center.1 - CELL_SIZE * CELL_VERTICAL as f32 / 2.,
-    )
-}
-
 pub fn draw_board() {
-    let center = get_screen_center();
-    let start_pos = get_start_position(&center);
+    let start_pos = get_start_position();
 
     for x in 0..CELL_HORIZONTAL {
         for y in 0..CELL_VERTICAL {

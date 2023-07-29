@@ -1,21 +1,16 @@
 use macroquad::shapes::draw_circle;
 
-use super::{get_screen_center, CELL_SIZE, CHECKER_BLACK_CL, CHECKER_SIZE, CHECKER_WHITE_CL};
+use super::{
+    get_start_position, BLACK_CELL_CL, CELL_SIZE, CHECKER_BLACK_CL, CHECKER_SIZE, CHECKER_WHITE_CL,
+    WHITE_CELL_CL,
+};
 use crate::game::{CELL_HORIZONTAL, CELL_VERTICAL};
 
 use crate::game::BOARD;
 use crate::player::PlayerKind;
 
-fn get_start_position(center: &(f32, f32)) -> (f32, f32) {
-    (
-        center.0 - CELL_SIZE * CELL_HORIZONTAL as f32 / 2.,
-        center.1 - CELL_SIZE * CELL_VERTICAL as f32 / 2.,
-    )
-}
-
 pub fn draw_checkers() {
-    let center = get_screen_center();
-    let start_pos = get_start_position(&center);
+    let start_pos = get_start_position();
     let board = BOARD.lock().unwrap();
 
     for x in 0..CELL_HORIZONTAL {
@@ -40,6 +35,21 @@ pub fn draw_checkers() {
                 CHECKER_SIZE / 2.,
                 col,
             );
+
+            if let Some(val) = &board[x as usize][y as usize] {
+                if val.is_king() {
+                    draw_circle(
+                        start_pos.0 + xpos,
+                        start_pos.1 + ypos,
+                        CHECKER_SIZE / 4.,
+                        if (x + y) % 2 != 0 {
+                            BLACK_CELL_CL
+                        } else {
+                            WHITE_CELL_CL
+                        },
+                    );
+                }
+            }
         }
     }
 }

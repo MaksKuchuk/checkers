@@ -45,4 +45,12 @@ impl Player {
     pub fn order(&self) -> &PlayerKind {
         (&self.order).as_ref().unwrap()
     }
+
+    pub fn result(&self) -> i32 {
+        self.result
+    }
+
+    pub fn result_add_one(&mut self) {
+        self.result += 1;
+    }
 }
