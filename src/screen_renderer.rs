@@ -1,5 +1,6 @@
 mod board_renderer;
 mod checker_renderer;
+mod mouse_renderer;
 mod result_renderer;
 
 use macroquad::{
@@ -10,13 +11,13 @@ use macroquad::{
 
 use board_renderer::draw_board;
 use checker_renderer::draw_checkers;
+use mouse_renderer::draw_mouse;
 use result_renderer::draw_result;
 
-use crate::game::{CELL_HORIZONTAL, CELL_VERTICAL};
+use crate::game::{CELL_HORIZONTAL, CELL_SIZE, CELL_VERTICAL};
 
 static BACKGROUND_CL: Color = GRAY;
 
-static CELL_SIZE: f32 = 50.;
 static BLACK_CELL_CL: Color = BLACK;
 static WHITE_CELL_CL: Color = WHITE;
 
@@ -28,6 +29,7 @@ pub fn draw() {
     clear_background(BACKGROUND_CL);
     draw_board();
     draw_checkers();
+    draw_mouse();
     draw_result();
 }
 
@@ -35,7 +37,7 @@ fn get_screen_center() -> (f32, f32) {
     (screen_width() / 2., screen_height() / 2.)
 }
 
-fn get_start_position() -> (f32, f32) {
+pub fn get_start_position() -> (f32, f32) {
     let center = get_screen_center();
     (
         center.0 - CELL_SIZE * CELL_HORIZONTAL as f32 / 2.,

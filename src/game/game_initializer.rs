@@ -70,8 +70,20 @@ fn init_arrangement(fst: Arc<Mutex<Player>>, snd: Arc<Mutex<Player>>) {
     }
 }
 
-pub fn init_game(name: String, _gamemode: Gamemode) {
-    init_board();
+fn init_players(name: String, gamemode: Gamemode) {
     init_first_player(name);
-    init_second_player(String::new());
+
+    match gamemode {
+        Gamemode::Offline => {
+            init_second_player(String::new());
+        }
+        Gamemode::Online => {
+            // init_second_player(String::new());
+        }
+    }
+}
+
+pub fn init_game(name: String, gamemode: Gamemode) {
+    init_board();
+    init_players(name, gamemode);
 }
