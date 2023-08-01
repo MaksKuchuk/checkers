@@ -1,6 +1,4 @@
-use super::{
-    draw_circle_in_cell, BLACK_CELL_CL, CHECKER_BLACK_CL, CHECKER_WHITE_CL, WHITE_CELL_CL,
-};
+use super::{draw_circle_in_cell, draw_circle_lines_in_cell, CHECKER_BLACK_CL, CHECKER_WHITE_CL};
 use crate::game::{CELL_HORIZONTAL, CELL_VERTICAL, CHECKER_SIZE};
 
 use crate::game::BOARD;
@@ -23,20 +21,10 @@ pub fn draw_checkers() {
                 continue;
             }
 
-            draw_circle_in_cell((x, y), CHECKER_SIZE, col);
-
-            if let Some(val) = &board[x as usize][y as usize] {
-                if val.is_king() {
-                    draw_circle_in_cell(
-                        (x, y),
-                        CHECKER_SIZE / 2,
-                        if (x + y) % 2 != 0 {
-                            BLACK_CELL_CL
-                        } else {
-                            WHITE_CELL_CL
-                        },
-                    )
-                }
+            if board[x as usize][y as usize].as_ref().unwrap().is_king() {
+                draw_circle_lines_in_cell((x, y), CHECKER_SIZE, col)
+            } else {
+                draw_circle_in_cell((x, y), CHECKER_SIZE, col);
             }
         }
     }

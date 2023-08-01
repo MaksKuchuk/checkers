@@ -2,14 +2,18 @@ use macroquad::prelude::{
     is_mouse_button_down, is_mouse_button_released, mouse_position, MouseButton,
 };
 
-use crate::checker::SelectedChecker;
 use crate::game::CELL_SIZE;
 use crate::screen_renderer::get_start_position;
+use crate::{checker::SelectedChecker, player::PlayerKind};
 
-use super::{BOARD, CELL_HORIZONTAL, CELL_VERTICAL, HANDELED_CHECKER};
+use super::{
+    game_rules::{get_possible_steps, next_order},
+    BOARD, CELL_HORIZONTAL, CELL_VERTICAL, HANDELED_CHECKER, ORDER,
+};
 
 pub enum CellError {
     OutOfBoard,
+    WrongStep,
 }
 
 pub fn is_taken() -> bool {
@@ -34,14 +38,15 @@ pub fn take_checker() {
         }
     };
 
-    //let order = &*ORDER.lock().unwrap();
+    let order = ORDER.lock().unwrap();
+    let mut board = BOARD.lock().unwrap();
 
-    let checker = (*BOARD.lock().unwrap())[place.0 as usize][place.1 as usize].take();
-
-    let checker = match checker {
-        Some(v) => v,
-        None => return,
+    match &board[place.0 as usize][place.1 as usize] {
+        Some(v) if v.player().as_ref().lock().unwrap().order() == *order => (),
+        _ => return,
     };
+
+    let checker = board[place.0 as usize][place.1 as usize].take().unwrap();
 
     *HANDELED_CHECKER.lock().unwrap() = Some(SelectedChecker::create(checker, place));
 }
@@ -61,22 +66,47 @@ fn get_cell_by_pixel(pos: (f32, f32)) -> Result<(i32, i32), CellError> {
 
 pub fn select_place() -> Result<(i32, i32), CellError> {
     if !is_mouse_button_released(MouseButton::Left) {
-        return Err(CellError::OutOfBoard);
+        return Err(CellError::WrongStep);
     }
     get_cell_by_pixel(mouse_position())
 }
 
-pub fn place_checker(place: Result<(i32, i32), CellError>) {
+pub fn place_checker(place: Result<(i32, i32), CellError>) -> bool {
     let pos = match place {
         Ok(v) => v,
-        Err(_) => return,
+        Err(_) => return false,
     };
 
-    let checker = match (*BOARD.lock().unwrap())[pos.0 as usize][pos.1 as usize] {
-        Some(_) => return,
-        None => (*HANDELED_CHECKER.lock().unwrap()).take(),
-    };
-    let checker = checker.unwrap().move_checker();
+    let mut selected_checker = HANDELED_CHECKER.lock().unwrap();
 
-    (*BOARD.lock().unwrap())[pos.0 as usize][pos.1 as usize] = Some(checker);
+    let (steps, steps_kill) = get_possible_steps(selected_checker.as_ref().unwrap());
+
+    let start_pos = selected_checker.as_ref().unwrap().place();
+
+    if !steps.contains(&pos) && !steps_kill.contains(&pos) && pos != start_pos {
+        return false;
+    }
+
+    let mut board = BOARD.lock().unwrap();
+
+    let checker = match board[pos.0 as usize][pos.1 as usize] {
+        Some(_) => return false,
+        None => (*selected_checker).take(),
+    };
+
+    let mut checker = checker.unwrap().move_checker();
+    let player_ref = checker.player();
+    let player = player_ref.as_ref().lock().unwrap();
+
+    match player.order() {
+        PlayerKind::First if pos.1 == 0 => checker.set_king(),
+        PlayerKind::Second if pos.1 == CELL_VERTICAL - 1 => checker.set_king(),
+        _ => (),
+    }
+
+    (*board)[pos.0 as usize][pos.1 as usize] = Some(checker);
+    if pos == start_pos {
+        next_order();
+    }
+    true
 }

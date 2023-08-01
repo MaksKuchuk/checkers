@@ -1,18 +1,9 @@
 use std::net::Ipv4Addr;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum PlayerKind {
     First,
     Second,
-}
-
-impl Clone for PlayerKind {
-    fn clone(&self) -> Self {
-        match self {
-            PlayerKind::First => PlayerKind::First,
-            PlayerKind::Second => PlayerKind::Second,
-        }
-    }
 }
 
 pub struct Player {

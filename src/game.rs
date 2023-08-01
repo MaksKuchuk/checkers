@@ -49,12 +49,11 @@ pub async fn run_game(name: String, gamemode: Gamemode) {
 
 fn make_step() {
     if is_taken() {
-        get_possible_steps((*HANDELED_CHECKER.lock().unwrap()).as_ref().unwrap());
-
         let place = select_place();
         if is_correct_move(&place) {
-            place_checker(place);
-            next_order();
+            if place_checker(place) {
+                next_order();
+            }
         }
     } else {
         take_checker();

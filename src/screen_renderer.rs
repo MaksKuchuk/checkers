@@ -5,8 +5,8 @@ mod result_renderer;
 mod steps_renderer;
 
 use macroquad::{
-    prelude::{Color, BLACK, GRAY, GREEN, RED, WHITE},
-    shapes::{draw_circle, draw_rectangle},
+    prelude::Color,
+    shapes::{draw_circle, draw_circle_lines, draw_rectangle},
     window::{clear_background, screen_height, screen_width},
 };
 
@@ -18,23 +18,23 @@ use steps_renderer::draw_possible_steps;
 
 use crate::game::{CELL_HORIZONTAL, CELL_SIZE, CELL_VERTICAL};
 
-static BACKGROUND_CL: Color = GRAY;
+static BACKGROUND_CL: Color = Color::new(0.974, 0.974, 0.974, 1.);
 
-static BLACK_CELL_CL: Color = BLACK;
-static WHITE_CELL_CL: Color = WHITE;
+static BLACK_CELL_CL: Color = Color::new(0.772, 0.392, 0.203, 1.);
+static WHITE_CELL_CL: Color = Color::new(0.913, 0.796, 0.647, 1.);
 
-static STEP_CL: Color = GREEN;
-static STEP_KILL_CL: Color = RED;
+static STEP_CL: Color = Color::new(0.56, 0.807, 0., 1.);
+static STEP_KILL_CL: Color = Color::new(0.956, 0.262, 0.211, 1.);
 
-static CHECKER_BLACK_CL: Color = Color::new(0.35, 0.35, 0.35, 1.);
-static CHECKER_WHITE_CL: Color = WHITE;
+static CHECKER_BLACK_CL: Color = Color::new(0.16, 0.16, 0.16, 1.);
+static CHECKER_WHITE_CL: Color = Color::new(0.882, 0.854, 0.741, 1.);
 
 pub fn draw() {
     clear_background(BACKGROUND_CL);
     draw_board();
     draw_checkers();
-    draw_mouse();
     draw_possible_steps();
+    draw_mouse();
     draw_result();
 }
 
@@ -58,6 +58,18 @@ fn draw_circle_in_cell(pos: (i32, i32), size: i32, col: Color) {
         start_pos.0 + xpos,
         start_pos.1 + ypos,
         size as f32 / 2.,
+        col,
+    );
+}
+fn draw_circle_lines_in_cell(pos: (i32, i32), size: i32, col: Color) {
+    let start_pos = get_start_position();
+    let xpos = pos.0 as f32 * CELL_SIZE + CELL_SIZE / 2.;
+    let ypos = pos.1 as f32 * CELL_SIZE + CELL_SIZE / 2.;
+    draw_circle_lines(
+        start_pos.0 + xpos,
+        start_pos.1 + ypos,
+        size as f32 / 2.,
+        size as f32 / 4.,
         col,
     );
 }
