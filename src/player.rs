@@ -6,6 +6,15 @@ pub enum PlayerKind {
     Second,
 }
 
+impl Clone for PlayerKind {
+    fn clone(&self) -> Self {
+        match self {
+            PlayerKind::First => PlayerKind::First,
+            PlayerKind::Second => PlayerKind::Second,
+        }
+    }
+}
+
 pub struct Player {
     name: Option<String>,
     result: i32,
@@ -43,8 +52,8 @@ impl Player {
         self.port = Some(port);
     }
 
-    pub fn order(&self) -> &PlayerKind {
-        (&self.order).as_ref().unwrap()
+    pub fn order(&self) -> PlayerKind {
+        self.order.as_ref().unwrap().clone()
     }
 
     pub fn result(&self) -> i32 {

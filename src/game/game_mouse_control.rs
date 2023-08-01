@@ -1,14 +1,12 @@
-use std::sync::Arc;
+use macroquad::prelude::{
+    is_mouse_button_down, is_mouse_button_released, mouse_position, MouseButton,
+};
 
-use macroquad::prelude::{is_mouse_button_pressed, mouse_position, MouseButton};
-
-use crate::checker::{self, Checker, SelectedChecker};
+use crate::checker::SelectedChecker;
 use crate::game::CELL_SIZE;
 use crate::screen_renderer::get_start_position;
 
-use super::{
-    BOARD, CELL_HORIZONTAL, CELL_VERTICAL, FIRST_PLAYER, HANDELED_CHECKER, ORDER, SECOND_PLAYER,
-};
+use super::{BOARD, CELL_HORIZONTAL, CELL_VERTICAL, HANDELED_CHECKER};
 
 pub enum CellError {
     OutOfBoard,
@@ -23,7 +21,7 @@ pub fn is_taken() -> bool {
 }
 
 pub fn take_checker() {
-    if !is_mouse_button_pressed(MouseButton::Left) {
+    if !is_mouse_button_down(MouseButton::Left) {
         return;
     }
 
@@ -36,7 +34,7 @@ pub fn take_checker() {
         }
     };
 
-    let order = &*ORDER.lock().unwrap();
+    //let order = &*ORDER.lock().unwrap();
 
     let checker = (*BOARD.lock().unwrap())[place.0 as usize][place.1 as usize].take();
 
@@ -62,7 +60,7 @@ fn get_cell_by_pixel(pos: (f32, f32)) -> Result<(i32, i32), CellError> {
 }
 
 pub fn select_place() -> Result<(i32, i32), CellError> {
-    if !is_mouse_button_pressed(MouseButton::Left) {
+    if !is_mouse_button_released(MouseButton::Left) {
         return Err(CellError::OutOfBoard);
     }
     get_cell_by_pixel(mouse_position())
