@@ -2,7 +2,6 @@ mod game_initializer;
 mod game_mouse_control;
 pub mod game_rules;
 
-use crate::checker::SelectedChecker;
 use crate::player::Player;
 use crate::screen_renderer::draw;
 use crate::{checker::Checker, player::PlayerKind};
@@ -14,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use game_mouse_control::take_checker;
 
 use self::game_mouse_control::{is_taken, place_checker, select_place};
-use self::game_rules::{get_possible_steps, is_correct_move, next_order};
+use self::game_rules::next_order;
 
 pub enum Gamemode {
     Online,
@@ -34,7 +33,7 @@ pub static FIRST_PLAYER: Lazy<Arc<Mutex<Player>>> =
 pub static SECOND_PLAYER: Lazy<Arc<Mutex<Player>>> =
     Lazy::new(|| Arc::new(Mutex::new(Player::default())));
 pub static ORDER: Mutex<PlayerKind> = Mutex::new(PlayerKind::First);
-pub static HANDELED_CHECKER: Mutex<Option<SelectedChecker>> = Mutex::new(None);
+pub static HANDELED_CHECKER: Mutex<Option<(i32, i32)>> = Mutex::new(None);
 
 pub async fn run_game(name: String, gamemode: Gamemode) {
     init_game(name, gamemode);
@@ -50,8 +49,8 @@ pub async fn run_game(name: String, gamemode: Gamemode) {
 fn make_step() {
     if is_taken() {
         let place = select_place();
-        if is_correct_move(&place) {
-            if place_checker(place) {
+        if let Ok(pos) = place {
+            if place_checker(pos) {
                 next_order();
             }
         }

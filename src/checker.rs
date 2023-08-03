@@ -1,33 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use crate::player::Player;
+use crate::player::{Player, PlayerKind};
 
 pub struct Checker {
     player: Arc<Mutex<Player>>,
     is_king: bool,
-}
-
-pub struct SelectedChecker {
-    checker: Checker,
-    place: (i32, i32),
-}
-
-impl SelectedChecker {
-    pub fn create(checker: Checker, place: (i32, i32)) -> SelectedChecker {
-        SelectedChecker { checker, place }
-    }
-
-    pub fn checker(&self) -> &Checker {
-        &self.checker
-    }
-
-    pub fn move_checker(self) -> Checker {
-        self.checker
-    }
-
-    pub fn place(&self) -> (i32, i32) {
-        self.place
-    }
 }
 
 impl Checker {
@@ -36,6 +13,10 @@ impl Checker {
             player,
             is_king: false,
         }
+    }
+
+    pub fn get_order(&self) -> PlayerKind {
+        self.player.lock().unwrap().order()
     }
 
     pub fn player(&self) -> Arc<Mutex<Player>> {

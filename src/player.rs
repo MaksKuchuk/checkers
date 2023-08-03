@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum PlayerKind {
     First,
     Second,

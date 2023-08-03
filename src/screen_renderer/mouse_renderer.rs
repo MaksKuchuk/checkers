@@ -4,6 +4,7 @@ use macroquad::{
 };
 
 use crate::{
+    board::{get_pos_is_king, get_pos_order},
     game::{CHECKER_SIZE, HANDELED_CHECKER},
     player::PlayerKind,
 };
@@ -11,13 +12,16 @@ use crate::{
 use super::{CHECKER_BLACK_CL, CHECKER_WHITE_CL};
 
 pub fn draw_mouse() {
-    if let None = *HANDELED_CHECKER.lock().unwrap() {
-        return;
-    }
+    let selected_checker_pos = match *HANDELED_CHECKER.lock().unwrap() {
+        Some(v) => v,
+        None => return,
+    };
 
-    let selected_checker = &*HANDELED_CHECKER.lock().unwrap();
-    let checker = selected_checker.as_ref().unwrap();
-    let order = checker.checker().player().as_ref().lock().unwrap().order();
+    let order = match get_pos_order(selected_checker_pos) {
+        Some(v) => v,
+        None => return,
+    };
+
     let pos = mouse_position();
     let col = if PlayerKind::First == order {
         CHECKER_WHITE_CL
@@ -25,7 +29,7 @@ pub fn draw_mouse() {
         CHECKER_BLACK_CL
     };
 
-    if checker.checker().is_king() {
+    if get_pos_is_king(selected_checker_pos) {
         draw_circle_lines(
             pos.0,
             pos.1,
