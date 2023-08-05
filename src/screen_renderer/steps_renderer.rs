@@ -1,5 +1,5 @@
 use crate::game::game_rules::get_possible_steps;
-use crate::game::{HANDELED_CHECKER, STEP_SIZE};
+use crate::game::{HANDELED_CHECKER, MUST_KILL_CHECKER, STEP_SIZE};
 
 use super::{draw_circle_in_cell, STEP_CL, STEP_KILL_CL};
 

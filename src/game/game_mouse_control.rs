@@ -7,6 +7,7 @@ use crate::movements::{make_kill_movement, make_movement};
 use crate::screen_renderer::get_start_position;
 
 use super::game_rules::{next_order, set_checker_pos_king};
+use super::MUST_KILL_CHECKER;
 use super::{
     game_rules::get_possible_steps, CELL_HORIZONTAL, CELL_SIZE, CELL_VERTICAL, HANDELED_CHECKER,
     ORDER,
@@ -87,6 +88,15 @@ pub fn place_checker(pos: (i32, i32)) -> bool {
     } else if steps_kill.contains(&pos) {
         make_kill_movement(start_pos, pos);
         set_checker_pos_king(pos);
+
+        let (_, ki) = get_possible_steps(pos);
+
+        if !ki.is_empty() {
+            *MUST_KILL_CHECKER.lock().unwrap() = Some(pos);
+            next_order();
+        } else {
+            *MUST_KILL_CHECKER.lock().unwrap() = None;
+        }
     }
 
     *selected_checker = None;

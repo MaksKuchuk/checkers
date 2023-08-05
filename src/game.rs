@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use game_mouse_control::take_checker;
 
 use self::game_mouse_control::{is_taken, place_checker, select_place};
-use self::game_rules::next_order;
+use self::game_rules::{is_game_end, next_order};
 
 pub enum Gamemode {
     Online,
@@ -34,6 +34,7 @@ pub static SECOND_PLAYER: Lazy<Arc<Mutex<Player>>> =
     Lazy::new(|| Arc::new(Mutex::new(Player::default())));
 pub static ORDER: Mutex<PlayerKind> = Mutex::new(PlayerKind::First);
 pub static HANDELED_CHECKER: Mutex<Option<(i32, i32)>> = Mutex::new(None);
+pub static MUST_KILL_CHECKER: Mutex<Option<(i32, i32)>> = Mutex::new(None);
 
 pub async fn run_game(name: String, gamemode: Gamemode) {
     init_game(name, gamemode);
@@ -41,9 +42,14 @@ pub async fn run_game(name: String, gamemode: Gamemode) {
     loop {
         draw();
         make_step();
+        if is_game_end() {
+            break;
+        }
 
         next_frame().await;
     }
+
+    end_screen();
 }
 
 fn make_step() {
@@ -58,3 +64,5 @@ fn make_step() {
         take_checker();
     }
 }
+
+fn end_screen() {}

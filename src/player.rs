@@ -54,4 +54,8 @@ impl Player {
     pub fn result_add_one(&mut self) {
         self.result += 1;
     }
+
+    pub fn name(&self) -> Option<&String> {
+        self.name.as_ref()
+    }
 }

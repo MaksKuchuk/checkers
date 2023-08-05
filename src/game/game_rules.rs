@@ -1,12 +1,11 @@
 use std::collections::HashSet;
 
 use crate::{
-    board::{get_pos_order, set_pos_king},
-    checker::Checker,
+    board::{get_pos_order, is_pos_empty, is_pos_king, set_pos_king},
     player::PlayerKind,
 };
 
-use super::{CELL_HORIZONTAL, CELL_VERTICAL, FIRST_PLAYER, ORDER};
+use super::{CELL_HORIZONTAL, CELL_VERTICAL, FIRST_PLAYER, MUST_KILL_CHECKER, ORDER};
 
 pub enum StepKind<T> {
     Some(T),
@@ -19,6 +18,12 @@ pub fn get_possible_steps(pos: (i32, i32)) -> (HashSet<(i32, i32)>, HashSet<(i32
         Some(v) => v,
         None => return (HashSet::new(), HashSet::new()),
     };
+
+    match *MUST_KILL_CHECKER.lock().unwrap() {
+        Some(v) if v == pos => (),
+        None => (),
+        _ => return (HashSet::new(), HashSet::new()),
+    }
 
     let mut steps: HashSet<(i32, i32)> = HashSet::new();
 
@@ -39,15 +44,47 @@ fn get_general_steps(order: PlayerKind, pos: (i32, i32)) -> HashSet<(i32, i32)> 
     let ways_down = [(-1, 1), (1, 1)];
     let fst_player_order = FIRST_PLAYER.lock().unwrap().order();
 
-    for (x, y) in if order == fst_player_order {
-        ways_top
+    if is_pos_king(pos) {
+        let maxx = std::cmp::max(CELL_HORIZONTAL, CELL_VERTICAL);
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 + xy, pos.1 + xy)) {
+                steps.insert((pos.0 + xy, pos.1 + xy));
+            } else {
+                break;
+            }
+        }
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 + xy, pos.1 - xy)) {
+                steps.insert((pos.0 + xy, pos.1 - xy));
+            } else {
+                break;
+            }
+        }
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 - xy, pos.1 + xy)) {
+                steps.insert((pos.0 - xy, pos.1 + xy));
+            } else {
+                break;
+            }
+        }
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 - xy, pos.1 - xy)) {
+                steps.insert((pos.0 - xy, pos.1 - xy));
+            } else {
+                break;
+            }
+        }
     } else {
-        ways_down
-    } {
-        match is_checker_order((pos.0 + x, pos.1 + y)) {
-            StepKind::Empty => steps.insert((pos.0 + x, pos.1 + y)),
-            _ => false,
-        };
+        for (x, y) in if order == fst_player_order {
+            ways_top
+        } else {
+            ways_down
+        } {
+            match is_checker_order((pos.0 + x, pos.1 + y)) {
+                StepKind::Empty => steps.insert((pos.0 + x, pos.1 + y)),
+                _ => false,
+            };
+        }
     }
 
     steps
@@ -57,14 +94,70 @@ fn get_kill_steps(order: PlayerKind, pos: (i32, i32)) -> HashSet<(i32, i32)> {
     let mut steps = HashSet::new();
     let ways_kill = [(-2, -2), (-2, 2), (2, -2), (2, 2)];
 
-    for (x, y) in ways_kill {
-        match is_checker_order((pos.0 + x, pos.1 + y)) {
-            StepKind::Empty => match is_checker_order((pos.0 + x / 2, pos.1 + y / 2)) {
-                StepKind::Some(v) if v != order => steps.insert((pos.0 + x, pos.1 + y)),
+    if is_pos_king(pos) {
+        let mut f = false;
+        let maxx = std::cmp::max(CELL_HORIZONTAL, CELL_VERTICAL);
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 + xy, pos.1 + xy)) {
+                if f {
+                    steps.insert((pos.0 + xy, pos.1 + xy));
+                }
+            } else {
+                if f {
+                    break;
+                }
+                f = true;
+            }
+        }
+        f = false;
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 + xy, pos.1 - xy)) {
+                if f {
+                    steps.insert((pos.0 + xy, pos.1 - xy));
+                }
+            } else {
+                if f {
+                    break;
+                }
+                f = true;
+            }
+        }
+        f = false;
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 - xy, pos.1 + xy)) {
+                if f {
+                    steps.insert((pos.0 - xy, pos.1 + xy));
+                }
+            } else {
+                if f {
+                    break;
+                }
+                f = true;
+            }
+        }
+        f = false;
+        for xy in 1..maxx {
+            if is_pos_empty((pos.0 - xy, pos.1 - xy)) {
+                if f {
+                    steps.insert((pos.0 - xy, pos.1 - xy));
+                }
+            } else {
+                if f {
+                    break;
+                }
+                f = true;
+            }
+        }
+    } else {
+        for (x, y) in ways_kill {
+            match is_checker_order((pos.0 + x, pos.1 + y)) {
+                StepKind::Empty => match is_checker_order((pos.0 + x / 2, pos.1 + y / 2)) {
+                    StepKind::Some(v) if v != order => steps.insert((pos.0 + x, pos.1 + y)),
+                    _ => false,
+                },
                 _ => false,
-            },
-            _ => false,
-        };
+            };
+        }
     }
 
     steps
@@ -115,4 +208,21 @@ pub fn next_order() {
     } else {
         PlayerKind::First
     };
+}
+
+pub fn is_game_end() -> bool {
+    let order = *ORDER.lock().unwrap();
+    for x in 0..CELL_HORIZONTAL {
+        for y in 0..CELL_VERTICAL {
+            match get_pos_order((x, y)) {
+                Some(v) if v == order => (),
+                _ => continue,
+            }
+            let (sp, sk) = get_possible_steps((x, y));
+            if !sp.is_empty() || !sk.is_empty() {
+                return false;
+            }
+        }
+    }
+    true
 }

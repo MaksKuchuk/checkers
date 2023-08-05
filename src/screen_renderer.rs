@@ -1,6 +1,7 @@
 mod board_renderer;
 mod checker_renderer;
 mod mouse_renderer;
+mod name_renderer;
 mod result_renderer;
 mod steps_renderer;
 
@@ -17,6 +18,8 @@ use result_renderer::draw_result;
 use steps_renderer::draw_possible_steps;
 
 use crate::game::{CELL_HORIZONTAL, CELL_SIZE, CELL_VERTICAL};
+
+use self::name_renderer::draw_name;
 
 static BACKGROUND_CL: Color = Color::new(0.974, 0.974, 0.974, 1.);
 
@@ -36,6 +39,7 @@ pub fn draw() {
     draw_possible_steps();
     draw_mouse();
     draw_result();
+    draw_name();
 }
 
 fn get_screen_center() -> (f32, f32) {
